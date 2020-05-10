@@ -28,6 +28,7 @@ module.exports = {
     plugins: [
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
+            template: './index.template.html',
             title: 'Code Math',
         }),
     ],
