@@ -1,3 +1,4 @@
+import { trig1 } from './trig';
 function main(win: Window, doc: Document): void {
     // hello
     console.log('hello code math');
@@ -12,11 +13,7 @@ function main(win: Window, doc: Document): void {
 
     const context = canvas.getContext('2d');
 
-    for (let i = 0; i < 100; i++) {
-        context.moveTo(Math.random() * width, Math.random() * height);
-        context.lineTo(Math.random() * width, Math.random() * height);
-        context.stroke();
-    }
+    trig1(context, width, height);
 }
 
 window.onload = function onload(): void {
