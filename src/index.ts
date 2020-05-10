@@ -1,3 +1,6 @@
-import sum from './sum';
+function main(win: Window, doc: Document): void {
+    console.log('win:', win);
+    console.log('doc:', doc);
+}
 
-export { sum };
+main(window, document);
