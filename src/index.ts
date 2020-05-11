@@ -1,4 +1,4 @@
-import { trig1 } from './trig';
+import { trig1, trig2 } from './trig';
 function main(win: Window, doc: Document): void {
     // hello
     console.log('hello code math');
@@ -13,7 +13,8 @@ function main(win: Window, doc: Document): void {
 
     const context = canvas.getContext('2d');
 
-    trig1(context, width, height);
+    // trig1(context, width, height);
+    trig2(context, width, height, win);
 }
 
 window.onload = function onload(): void {
