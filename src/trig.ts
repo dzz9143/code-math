@@ -232,3 +232,48 @@ export function chaosCircles(ctx: CanvasRenderingContext2D, width: number, heigh
 
     render();
 }
+
+export function arrow(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const arrowX = width / 2;
+    const arrowY = height / 2;
+    let dx = 0;
+    let dy = 0;
+    let angle = 0;
+
+    function render(): void {
+        ctx.clearRect(0, 0, width, height);
+
+        ctx.save();
+
+        ctx.translate(arrowX, arrowY);
+        ctx.rotate(angle);
+
+        // draw arrow
+        ctx.beginPath();
+        ctx.moveTo(20, 0);
+        ctx.lineTo(-20, 0);
+        ctx.moveTo(20, 0);
+        ctx.lineTo(10, 10);
+        ctx.moveTo(20, 0);
+        ctx.lineTo(10, -10);
+        ctx.stroke();
+
+        ctx.restore();
+
+        win.requestAnimationFrame(render);
+    }
+
+    doc.addEventListener('mousemove', (event) => {
+        dx = event.clientX - arrowX;
+        dy = event.clientY - arrowY;
+        angle = Math.atan2(dy, dx);
+    });
+
+    render();
+}

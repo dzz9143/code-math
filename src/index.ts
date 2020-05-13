@@ -1,4 +1,4 @@
-import { trig1, trig2, circle, ellipse, lissajousCurve, chaosCircles } from './trig';
+import { trig1, trig2, circle, ellipse, lissajousCurve, chaosCircles, arrow } from './trig';
 function main(win: Window, doc: Document): void {
     // hello
     console.log('hello code math');
@@ -18,7 +18,8 @@ function main(win: Window, doc: Document): void {
     // circle(context, width, height, win);
     // ellipse(context, width, height, win);
     // lissajousCurve(context, width, height, win);
-    chaosCircles(context, width, height, win);
+    // chaosCircles(context, width, height, win);
+    arrow(context, width, height, win, doc);
 }
 
 window.onload = function onload(): void {
