@@ -14,6 +14,11 @@ export class Particle {
         this.gravity = new Vector(0, grav);
     }
 
+    public accelerate = (acc: Vector): Particle => {
+        this.velocity.addTo(acc);
+        return this;
+    };
+
     public update = (): Particle => {
         this.velocity.addTo(this.gravity);
         this.position.addTo(this.velocity);

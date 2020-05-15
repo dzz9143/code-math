@@ -8,7 +8,7 @@ import {
     arrow,
 } from './trig';
 
-import { fireWork } from './physics';
+import { fireWork, movePlane } from './physics';
 function main(win: Window, doc: Document): void {
     // hello
     console.log('hello code math');
@@ -31,6 +31,7 @@ function main(win: Window, doc: Document): void {
     // chaosCircles(context, width, height, win);
     // arrow(context, width, height, win, doc);
     fireWork(context, width, height, win);
+    movePlane(context, width, height, win, doc);
 }
 
 window.onload = function onload(): void {
