@@ -1,6 +1,6 @@
 import { Particle } from './particle';
 
-export function moveParticle(
+export function fireWork(
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
@@ -13,9 +13,10 @@ export function moveParticle(
         particles.push(
             new Particle(
                 centerX,
-                centerY,
-                1 + Math.random() * 4,
+                centerY / 4,
+                2 + Math.random() * 5,
                 Math.random() * Math.PI * 2,
+                0.5,
             ),
         );
     }
