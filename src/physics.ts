@@ -155,3 +155,36 @@ export function movePlane(
 
     render();
 }
+
+export function galaxy(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+): void {
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    const sun = new Particle(centerX, centerY, 0, 0, 0, 1e4);
+    const earth = new Particle(centerX + 200, centerY, 7, Math.PI / 2);
+
+    function render(): void {
+        earth.gravitateTo(sun);
+        earth.update();
+
+        ctx.clearRect(0, 0, width, height);
+        // render sun
+        ctx.beginPath();
+        ctx.arc(sun.position.x, sun.position.y, 30, 0, Math.PI * 2);
+        ctx.fill();
+
+        // render earth
+        ctx.beginPath();
+        ctx.arc(earth.position.x, earth.position.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        win.requestAnimationFrame(render);
+    }
+
+    render();
+}

@@ -8,7 +8,7 @@ import {
     arrow,
 } from './trig';
 
-import { fireWork, movePlane } from './physics';
+import { fireWork, movePlane, galaxy } from './physics';
 function main(win: Window, doc: Document): void {
     // hello
     console.log('hello code math');
@@ -30,8 +30,9 @@ function main(win: Window, doc: Document): void {
     // lissajousCurve(context, width, height, win);
     // chaosCircles(context, width, height, win);
     // arrow(context, width, height, win, doc);
-    fireWork(context, width, height, win);
-    movePlane(context, width, height, win, doc);
+    // fireWork(context, width, height, win);
+    // movePlane(context, width, height, win, doc);
+    galaxy(context, width, height, win);
 }
 
 window.onload = function onload(): void {
