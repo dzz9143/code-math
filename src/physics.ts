@@ -1,5 +1,6 @@
 import { Particle } from './particle';
 import { Vector } from './vector';
+import { keyCodes } from './constant';
 
 export function fireWork(
     ctx: CanvasRenderingContext2D,
@@ -40,11 +41,6 @@ export function fireWork(
     render();
 }
 
-const KEY_UP = 38;
-// const KEY_DOWN = 40;
-const KEY_LEFT = 37;
-const KEY_RIGHT = 39;
-
 export function movePlane(
     ctx: CanvasRenderingContext2D,
     width: number,
@@ -65,13 +61,13 @@ export function movePlane(
 
     doc.addEventListener('keydown', (ev) => {
         switch (ev.keyCode) {
-            case KEY_LEFT:
+            case keyCodes.KEY_LEFT:
                 turningLeft = true;
                 break;
-            case KEY_RIGHT:
+            case keyCodes.KEY_RIGHT:
                 turningRight = true;
                 break;
-            case KEY_UP:
+            case keyCodes.KEY_UP:
                 thrusting = true;
                 break;
         }
@@ -79,13 +75,13 @@ export function movePlane(
 
     doc.addEventListener('keyup', (ev) => {
         switch (ev.keyCode) {
-            case KEY_LEFT:
+            case keyCodes.KEY_LEFT:
                 turningLeft = false;
                 break;
-            case KEY_RIGHT:
+            case keyCodes.KEY_RIGHT:
                 turningRight = false;
                 break;
-            case KEY_UP:
+            case keyCodes.KEY_UP:
                 thrusting = false;
                 break;
         }
