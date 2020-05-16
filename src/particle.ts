@@ -4,8 +4,10 @@ export class Particle {
     public position: Vector;
     public velocity: Vector;
     public gravity: Vector;
-
     public mass: number;
+
+    public bounce: number;
+    public radius: number;
 
     constructor(
         x: number,
