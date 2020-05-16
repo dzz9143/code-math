@@ -1,4 +1,8 @@
-export function trig1(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+export function trig1(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+): void {
     // push it down & flip
     ctx.translate(0, height / 2);
     ctx.scale(1, -1);
@@ -9,7 +13,12 @@ export function trig1(ctx: CanvasRenderingContext2D, width: number, height: numb
     }
 }
 
-export function trig2(ctx: CanvasRenderingContext2D, width: number, height: number, win?: Window): void {
+export function trig2(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+): void {
     const centerY = height / 2;
 
     const baseY = centerY;
@@ -63,7 +72,12 @@ export function trig2(ctx: CanvasRenderingContext2D, width: number, height: numb
     render();
 }
 
-export function circle(ctx: CanvasRenderingContext2D, width: number, height: number, win?: Window): void {
+export function circle(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+): void {
     const centerX = width / 2;
     const centerY = height / 2;
 
@@ -102,7 +116,12 @@ export function circle(ctx: CanvasRenderingContext2D, width: number, height: num
     render();
 }
 
-export function ellipse(ctx: CanvasRenderingContext2D, width: number, height: number, win?: Window): void {
+export function ellipse(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+): void {
     const centerX = width / 2;
     const centerY = height / 2;
 
@@ -142,7 +161,12 @@ export function ellipse(ctx: CanvasRenderingContext2D, width: number, height: nu
     render();
 }
 
-export function lissajousCurve(ctx: CanvasRenderingContext2D, width: number, height: number, win?: Window): void {
+export function lissajousCurve(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+): void {
     const centerX = width / 2;
     const centerY = height / 2;
 
@@ -210,7 +234,12 @@ class Circle {
     }
 }
 
-export function chaosCircles(ctx: CanvasRenderingContext2D, width: number, height: number, win?: Window): void {
+export function chaosCircles(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+): void {
     const centerX = width / 2;
     const centerY = height / 2;
 
