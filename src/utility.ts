@@ -1,4 +1,4 @@
-import { Circle } from './types';
+import { Circle, Rect } from './types';
 
 export function normalize(value: number, min: number, max: number): number {
     return (value - min) / (max - min);
@@ -20,7 +20,7 @@ export function map(
 }
 
 export function clamp(value: number, min: number, max: number): number {
-    return Math.max(Math.min(value, max), min);
+    return Math.max(Math.min(value, Math.max(min, max)), Math.min(min, max));
 }
 
 export function randRange(min: number, max: number): number {
@@ -54,4 +54,31 @@ export function circleCollision(c1: Circle, c2: Circle): boolean {
 
 export function circlePointCollision(x: number, y: number, c: Circle): boolean {
     return distance(x, y, c.x, c.y) <= c.radius;
+}
+
+export function inRange(value: number, min: number, max: number): boolean {
+    return value <= Math.max(min, max) && value >= Math.min(min, max);
+}
+
+export function pointInRect(x: number, y: number, rect: Rect): boolean {
+    return (
+        inRange(x, rect.x, rect.x + rect.width) &&
+        inRange(y, rect.y, rect.y + rect.height)
+    );
+}
+
+export function rangeIntersect(
+    min1: number,
+    max1: number,
+    min2: number,
+    max2: number,
+): boolean {
+    return max1 >= min2 && min1 <= max2;
+}
+
+export function rectCollision(r1: Rect, r2: Rect): boolean {
+    return (
+        rangeIntersect(r1.x, r1.x + r1.width, r2.x, r2.x + r2.width) &&
+        rangeIntersect(r1.y, r1.y + r1.height, r2.y, r2.y + r2.height)
+    );
 }

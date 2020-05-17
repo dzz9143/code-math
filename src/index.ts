@@ -12,7 +12,12 @@ import { fireWork, movePlane, galaxy } from './physics';
 
 import { soomthWrapping, bouncingParticle, droppingBall, fountain } from './edgeHandle';
 import { mapMouseMove, clampTheBall, lineToCenter } from './utilDemo';
-import { pointWithCircle, circleWithCircle } from './collisionDetection';
+import {
+    pointWithCircle,
+    circleWithCircle,
+    pointWithRect,
+    rectWithRect,
+} from './collisionDetection';
 
 function main(win: Window, doc: Document): void {
     // hello
@@ -46,7 +51,9 @@ function main(win: Window, doc: Document): void {
     // clampTheBall(context, width, height, win, doc);
     // lineToCenter(context, width, height, win, doc);
     // pointWithCircle(context, width, height, win, doc);
-    circleWithCircle(context, width, height, win, doc);
+    // circleWithCircle(context, width, height, win, doc);
+    // pointWithRect(context, width, height, win, doc);
+    rectWithRect(context, width, height, win, doc);
 }
 
 window.onload = function onload(): void {
