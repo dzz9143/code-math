@@ -5,6 +5,7 @@ export class Particle {
     public velocity: Vector;
     public gravity: Vector;
     public mass: number;
+    public friction: number;
 
     public bounce: number;
     public radius: number;
@@ -23,6 +24,7 @@ export class Particle {
         this.velocity.setAngle(direction);
         this.gravity = new Vector(0, grav);
         this.mass = mass;
+        this.friction = 1;
     }
 
     public accelerate = (acc: Vector): Particle => {
@@ -31,6 +33,7 @@ export class Particle {
     };
 
     public update = (): Particle => {
+        this.velocity.multiplyBy(this.friction);
         this.velocity.addTo(this.gravity);
         this.position.addTo(this.velocity);
         return this;

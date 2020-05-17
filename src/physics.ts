@@ -51,6 +51,8 @@ export function movePlane(
     const plane = new Particle(width / 2, height / 2, 0, 0);
     const acc = new Vector(0, 0);
 
+    plane.friction = 0.98;
+
     // plane head angle
     let angle = 0;
 

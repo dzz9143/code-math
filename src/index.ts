@@ -34,12 +34,12 @@ function main(win: Window, doc: Document): void {
     // chaosCircles(context, width, height, win);
     // arrow(context, width, height, win, doc);
     // fireWork(context, width, height, win);
-    // movePlane(context, width, height, win, doc);
+    movePlane(context, width, height, win, doc);
     // galaxy(context, width, height, win);
     // soomthWrapping(context, width, height, win);
     // bouncingParticle(context, width, height, win);
     // droppingBall(context, width, height, win);
-    fountain(context, width, height, win);
+    // fountain(context, width, height, win);
 }
 
 window.onload = function onload(): void {
