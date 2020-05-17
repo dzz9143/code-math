@@ -1,4 +1,4 @@
-import { degToR, distance } from './utility';
+import { degToR, distance, circlePointCollision, circleCollision } from './utility';
 
 export function pointWithCircle(
     ctx: CanvasRenderingContext2D,
@@ -7,23 +7,23 @@ export function pointWithCircle(
     win?: Window,
     doc?: Document,
 ): void {
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    const radius = 40;
+    const circle = {
+        x: width / 2,
+        y: height / 2,
+        radius: 40,
+    };
 
     doc.addEventListener('mousemove', (ev) => {
         ctx.clearRect(0, 0, width, height);
-        // check collision
-        const dst = distance(ev.clientX, ev.clientY, centerX, centerY);
-        if (dst <= radius) {
+
+        if (circlePointCollision(ev.clientX, ev.clientY, circle)) {
             ctx.fillStyle = 'rgb(200, 100, 100)';
         } else {
             ctx.fillStyle = 'rgb(0, 0, 0)';
         }
 
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, degToR(360));
+        ctx.arc(circle.x, circle.y, circle.radius, 0, degToR(360));
         ctx.fill();
     });
 }
@@ -35,28 +35,35 @@ export function circleWithCircle(
     win?: Window,
     doc?: Document,
 ): void {
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const centerRadius = 40;
+    const circle = {
+        x: width / 2,
+        y: height / 2,
+        radius: 40,
+    };
 
-    const moveRadius = 20;
+    const moveCircle = {
+        x: 0,
+        y: 0,
+        radius: 20,
+    };
 
     doc.addEventListener('mousemove', (ev) => {
         ctx.clearRect(0, 0, width, height);
         // check collision
-        const dst = distance(ev.clientX, ev.clientY, centerX, centerY);
-        if (dst <= moveRadius + centerRadius) {
+        moveCircle.x = ev.clientX;
+        moveCircle.y = ev.clientY;
+        if (circleCollision(circle, moveCircle)) {
             ctx.fillStyle = 'rgb(200, 100, 100)';
         } else {
             ctx.fillStyle = 'rgb(0, 0, 0)';
         }
 
         ctx.beginPath();
-        ctx.arc(centerX, centerY, centerRadius, 0, degToR(360));
+        ctx.arc(circle.x, circle.y, circle.radius, 0, degToR(360));
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(ev.clientX, ev.clientY, moveRadius, 0, degToR(360));
+        ctx.arc(moveCircle.x, moveCircle.y, moveCircle.radius, 0, degToR(360));
         ctx.fill();
     });
 }
