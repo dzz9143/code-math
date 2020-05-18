@@ -19,6 +19,8 @@ import {
     rectWithRect,
 } from './collisionDetection';
 
+import gameApplication from './applications/game/main';
+
 function main(win: Window, doc: Document): void {
     // hello
     console.log('hello code math');
@@ -53,7 +55,10 @@ function main(win: Window, doc: Document): void {
     // pointWithCircle(context, width, height, win, doc);
     // circleWithCircle(context, width, height, win, doc);
     // pointWithRect(context, width, height, win, doc);
-    rectWithRect(context, width, height, win, doc);
+    // rectWithRect(context, width, height, win, doc);
+
+    // for applications
+    gameApplication(context, width, height, win, doc);
 }
 
 window.onload = function onload(): void {
