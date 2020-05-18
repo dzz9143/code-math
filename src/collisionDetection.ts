@@ -148,6 +148,7 @@ export function rectWithRect(
             ctx.fillStyle = 'rgb(0, 0, 0)';
         }
 
+        ctx.beginPath();
         ctx.rect(rect.x, rect.y, rect.width, rect.height);
         ctx.rect(moveRect.x, moveRect.y, moveRect.width, moveRect.height);
         ctx.fill();
