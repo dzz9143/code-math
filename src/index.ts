@@ -20,6 +20,7 @@ import {
 } from './collisionDetection';
 
 import gameApplication from './applications/game/main';
+import { simpleSpring, simpleMoveSpring } from './spring';
 
 function main(win: Window, doc: Document): void {
     // hello
@@ -57,8 +58,11 @@ function main(win: Window, doc: Document): void {
     // pointWithRect(context, width, height, win, doc);
     // rectWithRect(context, width, height, win, doc);
 
+    // simpleSpring(context, width, height, win);
+    simpleMoveSpring(context, width, height, win, doc);
+
     // for applications
-    gameApplication(context, width, height, win, doc);
+    // gameApplication(context, width, height, win, doc);
 }
 
 window.onload = function onload(): void {
