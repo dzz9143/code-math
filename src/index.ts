@@ -20,7 +20,12 @@ import {
 } from './collisionDetection';
 
 import gameApplication from './applications/game/main';
-import { simpleSpring, simpleMoveSpring } from './spring';
+import {
+    simpleSpring,
+    simpleMoveSpring,
+    moveSpringWithLength,
+    ballConnectWithSpring,
+} from './spring';
 
 function main(win: Window, doc: Document): void {
     // hello
@@ -59,7 +64,9 @@ function main(win: Window, doc: Document): void {
     // rectWithRect(context, width, height, win, doc);
 
     // simpleSpring(context, width, height, win);
-    simpleMoveSpring(context, width, height, win, doc);
+    // simpleMoveSpring(context, width, height, win, doc);
+    // moveSpringWithLength(context, width, height, win, doc);
+    ballConnectWithSpring(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);
