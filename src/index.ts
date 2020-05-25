@@ -26,6 +26,7 @@ import {
     moveSpringWithLength,
     ballConnectWithSpring,
 } from './spring';
+import { springsTest1, springsTest2, gravitationTest } from './testParticle2';
 
 function main(win: Window, doc: Document): void {
     // hello
@@ -66,7 +67,10 @@ function main(win: Window, doc: Document): void {
     // simpleSpring(context, width, height, win);
     // simpleMoveSpring(context, width, height, win, doc);
     // moveSpringWithLength(context, width, height, win, doc);
-    ballConnectWithSpring(context, width, height, win, doc);
+    // ballConnectWithSpring(context, width, height, win, doc);
+    // springsTest1(context, width, height, win, doc);
+    // springsTest2(context, width, height, win, doc);
+    gravitationTest(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);
