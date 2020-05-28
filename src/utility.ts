@@ -91,3 +91,12 @@ export function roundToPlaces(num: number, places: number): number {
 export function roundNearest(num: number, near: number): number {
     return Math.round(num / near) * near;
 }
+
+export function randDist(min: number, max: number, iteration: number): number {
+    let sum = 0;
+    for (let i = 0; i < iteration; i++) {
+        sum += randRange(min, max);
+    }
+
+    return sum / iteration;
+}

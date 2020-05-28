@@ -1,4 +1,5 @@
-import { map, degToR, clamp, roundNearest } from './utility';
+import { map, degToR, clamp, roundNearest, randDist } from './utility';
+import { Particle } from './particle2';
 
 export function mapMouseMove(
     ctx: CanvasRenderingContext2D,
@@ -104,6 +105,67 @@ export function nearToGrid(
         ctx.beginPath();
         ctx.arc(cx, cy, 20, 0, degToR(360));
         ctx.stroke();
+
+        win.requestAnimationFrame(render);
+    }
+    render();
+}
+
+export function bellCurve(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const result: number[] = [];
+    const w = width / 100;
+
+    function update(): void {
+        const val = Math.floor(randDist(0, 100, 3));
+        if (!result[val]) {
+            result[val] = 0;
+        }
+
+        result[val]++;
+    }
+
+    function render(): void {
+        update();
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < 100; i++) {
+            ctx.beginPath();
+            ctx.fillRect(i * w, height, w, -10 * result[i]);
+            ctx.fill();
+        }
+
+        win.requestAnimationFrame(render);
+    }
+    render();
+}
+
+export function pointsInSpace(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const points: Particle[] = [];
+
+    for (let i = 0; i < 50000; i++) {
+        points.push(new Particle(randDist(0, width, 5), randDist(0, height, 5), 0, 0));
+    }
+
+    function render(): void {
+        ctx.clearRect(0, 0, width, height);
+
+        points.forEach((p) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 1, 0, degToR(360));
+            ctx.fill();
+        });
 
         win.requestAnimationFrame(render);
     }

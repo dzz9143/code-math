@@ -11,7 +11,14 @@ import {
 import { fireWork, movePlane, galaxy } from './physics';
 
 import { soomthWrapping, bouncingParticle, droppingBall, fountain } from './edgeHandle';
-import { mapMouseMove, clampTheBall, lineToCenter, nearToGrid } from './utilDemo';
+import {
+    mapMouseMove,
+    clampTheBall,
+    lineToCenter,
+    nearToGrid,
+    bellCurve,
+    pointsInSpace,
+} from './utilDemo';
 import {
     pointWithCircle,
     circleWithCircle,
@@ -70,7 +77,9 @@ function main(win: Window, doc: Document): void {
     // springsTest1(context, width, height, win, doc);
     // springsTest2(context, width, height, win, doc);
     // gravitationTest(context, width, height, win, doc);
-    nearToGrid(context, width, height, win, doc);
+    // nearToGrid(context, width, height, win, doc);
+    // bellCurve(context, width, height, win, doc);
+    pointsInSpace(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);
