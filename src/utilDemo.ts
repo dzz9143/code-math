@@ -1,4 +1,4 @@
-import { map, degToR, clamp } from './utility';
+import { map, degToR, clamp, roundNearest } from './utility';
 
 export function mapMouseMove(
     ctx: CanvasRenderingContext2D,
@@ -64,4 +64,48 @@ export function lineToCenter(
         ctx.lineTo(ev.clientX, ev.clientY);
         ctx.stroke();
     });
+}
+
+export function nearToGrid(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const gridSize = 40;
+    const h = Math.floor(height / gridSize);
+    const v = Math.floor(width / gridSize);
+
+    let cx = 0;
+    let cy = 0;
+
+    doc.addEventListener('mousemove', (ev) => {
+        cx = roundNearest(ev.clientX, gridSize);
+        cy = roundNearest(ev.clientY, gridSize);
+    });
+
+    function render(): void {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < h; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, i * gridSize);
+            ctx.lineTo(width, i * gridSize);
+            ctx.stroke();
+        }
+
+        for (let i = 0; i < v; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * gridSize, 0);
+            ctx.lineTo(i * gridSize, height);
+            ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, 20, 0, degToR(360));
+        ctx.stroke();
+
+        win.requestAnimationFrame(render);
+    }
+    render();
 }

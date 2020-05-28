@@ -82,3 +82,12 @@ export function rectCollision(r1: Rect, r2: Rect): boolean {
         rangeIntersect(r1.y, r1.y + r1.height, r2.y, r2.y + r2.height)
     );
 }
+
+export function roundToPlaces(num: number, places: number): number {
+    const d = Math.pow(10, places);
+    return Math.round(num * d) / d;
+}
+
+export function roundNearest(num: number, near: number): number {
+    return Math.round(num / near) * near;
+}
