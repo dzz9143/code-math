@@ -1,4 +1,5 @@
 import { Circle, Rect } from './types';
+import { Particle } from './particle2';
 
 export function normalize(value: number, min: number, max: number): number {
     return (value - min) / (max - min);
@@ -99,4 +100,40 @@ export function randDist(min: number, max: number, iteration: number): number {
     }
 
     return sum / iteration;
+}
+
+export function quadraticBezier(
+    p0: Particle,
+    p1: Particle,
+    p2: Particle,
+    t: number,
+    pFinal?: Particle,
+): Particle {
+    const p = pFinal || new Particle(0, 0, 0, 0);
+    p.x = Math.pow(1 - t, 2) * p0.x + (1 - t) * 2 * t * p1.x + t * t * p2.x;
+    p.y = Math.pow(1 - t, 2) * p0.y + (1 - t) * 2 * t * p1.y + t * t * p2.y;
+    return p;
+}
+
+export function cubicBezier(
+    p0: Particle,
+    p1: Particle,
+    p2: Particle,
+    p3: Particle,
+    t: number,
+    pFinal?: Particle,
+): Particle {
+    const p = pFinal || new Particle(0, 0, 0, 0);
+    p.x =
+        Math.pow(1 - t, 3) * p0.x +
+        Math.pow(1 - t, 2) * 3 * t * p1.x +
+        (1 - t) * 3 * t * t * p2.x +
+        t * t * t * p3.x;
+
+    p.y =
+        Math.pow(1 - t, 3) * p0.y +
+        Math.pow(1 - t, 2) * 3 * t * p1.y +
+        (1 - t) * 3 * t * t * p2.y +
+        t * t * t * p3.y;
+    return p;
 }

@@ -34,6 +34,7 @@ import {
     ballConnectWithSpring,
 } from './spring';
 import { springsTest1, springsTest2, gravitationTest } from './testParticle2';
+import { quadBezierCurve1, quadBezierCurve2 } from './bezierCurve';
 
 function main(win: Window, doc: Document): void {
     // hello
@@ -79,7 +80,9 @@ function main(win: Window, doc: Document): void {
     // gravitationTest(context, width, height, win, doc);
     // nearToGrid(context, width, height, win, doc);
     // bellCurve(context, width, height, win, doc);
-    pointsInSpace(context, width, height, win, doc);
+    // pointsInSpace(context, width, height, win, doc);
+    // quadBezierCurve1(context, width, height, win, doc);
+    quadBezierCurve2(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);
