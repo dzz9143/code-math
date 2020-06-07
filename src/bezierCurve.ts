@@ -164,3 +164,61 @@ export function quadBezierCurve2(
 
     render();
 }
+
+export function bezierCurveTo(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const p1 = new Particle(randRange(0, width), randRange(0, height), 0, 0);
+    const cp1 = new Particle(randRange(0, width), randRange(0, height), 0, 0);
+    const cp2 = new Particle(randRange(0, width), randRange(0, height), 0, 0);
+    const p2 = new Particle(randRange(0, width), randRange(0, height), 0, 0);
+
+    function render(): void {
+        ctx.clearRect(0, 0, width, height);
+
+        // start point
+        ctx.beginPath();
+        ctx.arc(p1.x, p1.y, 4, 0, degToR(360));
+        ctx.fill();
+
+        // endpoint
+        ctx.beginPath();
+        ctx.arc(p2.x, p2.y, 4, 0, degToR(360));
+        ctx.fill();
+
+        // control point
+        ctx.save();
+
+        ctx.strokeStyle = '#aaa';
+        ctx.fillStyle = '#aaa';
+
+        ctx.beginPath();
+        ctx.arc(cp1.x, cp1.y, 2, 0, degToR(360));
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(cp2.x, cp2.y, 2, 0, degToR(360));
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(cp1.x, cp1.y);
+        ctx.lineTo(cp2.x, cp2.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+        ctx.restore();
+
+        // bezier curve
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y);
+        ctx.stroke();
+        win.requestAnimationFrame(render);
+    }
+
+    render();
+}
