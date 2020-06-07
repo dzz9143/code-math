@@ -18,6 +18,7 @@ import {
     nearToGrid,
     bellCurve,
     pointsInSpace,
+    circularExplosion,
 } from './utilDemo';
 import {
     pointWithCircle,
@@ -82,7 +83,8 @@ function main(win: Window, doc: Document): void {
     // bellCurve(context, width, height, win, doc);
     // pointsInSpace(context, width, height, win, doc);
     // quadBezierCurve1(context, width, height, win, doc);
-    quadBezierCurve2(context, width, height, win, doc);
+    // quadBezierCurve2(context, width, height, win, doc);
+    circularExplosion(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);

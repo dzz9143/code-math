@@ -1,4 +1,4 @@
-import { map, degToR, clamp, roundNearest, randDist } from './utility';
+import { map, degToR, clamp, roundNearest, randDist, randRange } from './utility';
 import { Particle } from './particle2';
 
 export function mapMouseMove(
@@ -169,5 +169,36 @@ export function pointsInSpace(
 
         win.requestAnimationFrame(render);
     }
+    render();
+}
+
+export function circularExplosion(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const points: Particle[] = [];
+
+    for (let i = 0; i < 500; i++) {
+        const p = new Particle(width / 2, height / 2, 0, 0);
+        p.setSpeed(randRange(1, 4));
+        p.setDirection(randRange(0, degToR(360)));
+        points.push(p);
+    }
+
+    function render(): void {
+        ctx.clearRect(0, 0, width, height);
+        points.forEach((p) => {
+            p.update();
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 4, 0, degToR(360));
+            ctx.fill();
+        });
+        win.requestAnimationFrame(render);
+    }
+
     render();
 }
