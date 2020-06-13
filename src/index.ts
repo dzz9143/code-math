@@ -36,7 +36,14 @@ import {
 } from './spring';
 import { springsTest1, springsTest2, gravitationTest } from './testParticle2';
 import { quadBezierCurve1, quadBezierCurve2, bezierCurveTo } from './bezierCurve';
-import { rectInSpace, lineInSpace, carouselRect } from './3d';
+import {
+    rectInSpace,
+    lineInSpace,
+    carouselRect,
+    spiralDots,
+    insideSpiralDots,
+    weirdSpiralMesh,
+} from './3d';
 
 function main(win: Window, doc: Document): void {
     // hello
@@ -89,7 +96,10 @@ function main(win: Window, doc: Document): void {
     // bezierCurveTo(context, width, height, win, doc);
     // rectInSpace(context, width, height, win, doc);
     // lineInSpace(context, width, height, win, doc);
-    carouselRect(context, width, height, win, doc);
+    // carouselRect(context, width, height, win, doc);
+    // spiralDots(context, width, height, win, doc);
+    // insideSpiralDots(context, width, height, win, doc);
+    weirdSpiralMesh(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);

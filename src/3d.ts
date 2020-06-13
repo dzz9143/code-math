@@ -169,3 +169,220 @@ export function carouselRect(
 
     render();
 }
+
+export function spiralDots(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const fl = 300;
+
+    ctx.translate(width / 2, height / 2);
+
+    const dots: any[] = [];
+    const num = 1000;
+    const centerZ = 600;
+    const radius = 500;
+
+    let baseAngle = 0;
+    let rotationSpeed = 0;
+    let yOffset = 0;
+
+    for (let i = 0; i < num; i++) {
+        dots.push({
+            angle: degToR(10) * i,
+            y: -1500 + 10 * i,
+            color: `rgb(${randRange(0, 255)}, ${randRange(0, 255)}, ${randRange(
+                0,
+                255,
+            )})`,
+        });
+    }
+
+    doc.addEventListener('mousemove', (ev) => {
+        const clientX = ev.clientX;
+        const clientY = ev.clientY;
+        rotationSpeed = map(clientX, 0, width, 0.05, -0.05);
+        yOffset = map(clientY, 0, height, -300, 300);
+    });
+
+    function zsort(a: any, b: any): number {
+        const az = centerZ + Math.cos(a.angle + baseAngle) * radius;
+        const bz = centerZ + Math.cos(b.angle + baseAngle) * radius;
+        return bz - az;
+    }
+
+    function render(): void {
+        ctx.clearRect(-width / 2, -height / 2, width, height);
+
+        dots.sort(zsort);
+
+        dots.forEach((dot) => {
+            const x = Math.sin(dot.angle + baseAngle) * radius;
+            const z = centerZ + Math.cos(dot.angle + baseAngle) * radius;
+            const p = fl / (fl + z);
+            const y = dot.y + yOffset;
+
+            ctx.save();
+            ctx.fillStyle = dot.color;
+            ctx.scale(p, p);
+            ctx.translate(x, y);
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, degToR(360));
+            ctx.fill();
+            ctx.restore();
+        });
+
+        baseAngle += rotationSpeed;
+
+        win.requestAnimationFrame(render);
+    }
+
+    render();
+}
+
+export function insideSpiralDots(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const fl = 300;
+
+    ctx.translate(width / 2, height / 2);
+
+    const dots: any[] = [];
+    const num = 1000;
+    const centerZ = -300;
+    const radius = width / 2;
+
+    let baseAngle = 0;
+    let rotationSpeed = 0;
+    let yOffset = 0;
+
+    for (let i = 0; i < num; i++) {
+        dots.push({
+            angle: degToR(20) * i,
+            y: -1500 + 20 * i,
+            color: `rgb(${randRange(0, 255)}, ${randRange(0, 255)}, ${randRange(
+                0,
+                255,
+            )})`,
+        });
+    }
+
+    doc.addEventListener('mousemove', (ev) => {
+        const clientX = ev.clientX;
+        const clientY = ev.clientY;
+        rotationSpeed = map(clientX, 0, width, 0.05, -0.05);
+        yOffset = map(clientY, 0, height, -300, 300);
+    });
+
+    function zsort(a: any, b: any): number {
+        const az = centerZ + Math.cos(a.angle + baseAngle) * radius;
+        const bz = centerZ + Math.cos(b.angle + baseAngle) * radius;
+        return bz - az;
+    }
+
+    function render(): void {
+        ctx.clearRect(-width / 2, -height / 2, width, height);
+
+        dots.sort(zsort);
+
+        dots.forEach((dot) => {
+            const x = Math.sin(dot.angle + baseAngle) * radius;
+            const z = centerZ + Math.cos(dot.angle + baseAngle) * radius;
+            if (z < 0) return;
+            const p = fl / (fl + z);
+            const y = dot.y + yOffset;
+
+            ctx.save();
+            ctx.fillStyle = dot.color;
+            ctx.scale(p, p);
+            ctx.translate(x, y);
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, degToR(360));
+            ctx.fill();
+            ctx.restore();
+        });
+
+        baseAngle += rotationSpeed;
+
+        win.requestAnimationFrame(render);
+    }
+
+    render();
+}
+
+export function weirdSpiralMesh(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const fl = 300;
+
+    ctx.translate(width / 2, height / 2);
+
+    const points: any[] = [];
+    const num = 1000;
+    const centerZ = 600;
+    const radius = 400;
+
+    let baseAngle = 0;
+    let rotationSpeed = 0;
+    let yOffset = 0;
+
+    for (let i = 0; i < num; i++) {
+        points.push({
+            angle: degToR(20) * i,
+            y: -1500 + 20 * i + randRange(0, 200),
+        });
+    }
+
+    doc.addEventListener('mousemove', (ev) => {
+        const clientX = ev.clientX;
+        const clientY = ev.clientY;
+        rotationSpeed = map(clientX, 0, width, 0.05, -0.05);
+        yOffset = map(clientY, 0, height, -300, 300);
+    });
+
+    function render(): void {
+        ctx.clearRect(-width / 2, -height / 2, width, height);
+
+        ctx.beginPath();
+
+        let i = 0;
+        points.forEach((point) => {
+            const x = Math.sin(point.angle + baseAngle) * radius;
+            const z = centerZ + Math.cos(point.angle + baseAngle) * radius;
+            const p = fl / (fl + z);
+            const y = point.y + yOffset;
+
+            ctx.save();
+            ctx.scale(p, p);
+            ctx.translate(x, y);
+
+            if (i === 0) {
+                ctx.moveTo(0, 0);
+            } else {
+                ctx.lineTo(0, 0);
+            }
+
+            ctx.restore();
+            i++;
+        });
+
+        ctx.stroke();
+
+        baseAngle += rotationSpeed;
+
+        win.requestAnimationFrame(render);
+    }
+
+    render();
+}
