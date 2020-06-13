@@ -121,6 +121,10 @@ export function carouselRect(
             angle: degToR((360 / num) * i),
             w: 200,
             h: 100,
+            color: `rgb(${randRange(0, 255)}, ${randRange(0, 255)}, ${randRange(
+                0,
+                255,
+            )})`,
         });
     }
 
@@ -131,8 +135,16 @@ export function carouselRect(
         yOffset = map(clientY, 0, height, -300, 300);
     });
 
+    function zsort(a: any, b: any): number {
+        const az = centerZ + Math.cos(a.angle + baseAngle) * radius;
+        const bz = centerZ + Math.cos(b.angle + baseAngle) * radius;
+        return bz - az;
+    }
+
     function render(): void {
         ctx.clearRect(-width / 2, -height / 2, width, height);
+
+        rects.sort(zsort);
 
         rects.forEach((rect) => {
             const x = Math.sin(rect.angle + baseAngle) * radius;
@@ -141,15 +153,12 @@ export function carouselRect(
             const y = baseY + yOffset;
 
             ctx.save();
+            ctx.fillStyle = rect.color;
             ctx.scale(p, p);
             ctx.translate(x, y);
-
             ctx.beginPath();
-
             ctx.rect(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
-
-            ctx.stroke();
-
+            ctx.fill();
             ctx.restore();
         });
 
