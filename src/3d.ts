@@ -1,4 +1,5 @@
 import { randRange, degToR, map } from './utility';
+import { keyCodes } from './constant';
 
 export function rectInSpace(
     ctx: CanvasRenderingContext2D,
@@ -381,6 +382,102 @@ export function weirdSpiralMesh(
 
         baseAngle += rotationSpeed;
 
+        win.requestAnimationFrame(render);
+    }
+
+    render();
+}
+
+export function moveCube(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const fl = 300;
+
+    const baseZ = 1000;
+
+    const cube = {
+        pos: {
+            x: 0,
+            y: 0,
+            z: 0,
+        },
+    };
+
+    doc.addEventListener('keydown', (ev) => {
+        switch (ev.keyCode) {
+            case keyCodes.KEY_LEFT:
+                cube.pos.x -= 10;
+                break;
+            case keyCodes.KEY_RIGHT:
+                cube.pos.x += 10;
+                break;
+            case keyCodes.KEY_UP:
+                if (ev.ctrlKey) {
+                    cube.pos.z -= 10;
+                } else {
+                    cube.pos.y -= 10;
+                }
+                break;
+            case keyCodes.KEY_DOWN:
+                if (ev.ctrlKey) {
+                    cube.pos.z += 10;
+                } else {
+                    cube.pos.y += 10;
+                }
+                break;
+        }
+    });
+
+    // (0, 0, 0) as central point
+    const meshPoints = [
+        { x: 400, y: -400, z: 400 },
+        { x: 400, y: -400, z: -400 },
+        { x: -400, y: -400, z: -400 },
+        { x: -400, y: -400, z: 400 },
+
+        { x: 400, y: 400, z: 400 },
+        { x: 400, y: 400, z: -400 },
+        { x: -400, y: 400, z: -400 },
+        { x: -400, y: 400, z: 400 },
+    ];
+
+    function drawLines(points: any[], arr: any[]): void {
+        ctx.beginPath();
+        arr.forEach((i, idx) => {
+            const p = points[i];
+            if (idx === 0) {
+                ctx.moveTo(p.x, p.y);
+            } else {
+                ctx.lineTo(p.x, p.y);
+            }
+        });
+        ctx.stroke();
+    }
+
+    function update(): void {
+        const screenPoints = meshPoints.map((p) => {
+            const perspective = fl / (fl + baseZ + p.z + cube.pos.z);
+            return {
+                x: (p.x + cube.pos.x) * perspective,
+                y: (p.y + cube.pos.y) * perspective,
+            };
+        });
+
+        drawLines(screenPoints, [0, 3, 7, 4, 0]);
+        drawLines(screenPoints, [1, 2, 6, 5, 1]);
+        drawLines(screenPoints, [0, 1, 2, 3, 0]);
+        drawLines(screenPoints, [4, 5, 6, 7, 4]);
+    }
+
+    ctx.translate(width / 2, height / 2);
+
+    function render(): void {
+        ctx.clearRect(-width / 2, -height / 2, width, height);
+        update();
         win.requestAnimationFrame(render);
     }
 

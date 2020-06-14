@@ -43,6 +43,7 @@ import {
     spiralDots,
     insideSpiralDots,
     weirdSpiralMesh,
+    moveCube,
 } from './3d';
 
 function main(win: Window, doc: Document): void {
@@ -99,7 +100,8 @@ function main(win: Window, doc: Document): void {
     // carouselRect(context, width, height, win, doc);
     // spiralDots(context, width, height, win, doc);
     // insideSpiralDots(context, width, height, win, doc);
-    weirdSpiralMesh(context, width, height, win, doc);
+    // weirdSpiralMesh(context, width, height, win, doc);
+    moveCube(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);
