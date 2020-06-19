@@ -398,6 +398,8 @@ export function moveCube(
     const fl = 300;
 
     const baseZ = 1000;
+    let yDeg = 0;
+    let xDeg = 0;
 
     const cube = {
         pos: {
@@ -410,20 +412,32 @@ export function moveCube(
     doc.addEventListener('keydown', (ev) => {
         switch (ev.keyCode) {
             case keyCodes.KEY_LEFT:
-                cube.pos.x -= 10;
+                if (ev.shiftKey) {
+                    yDeg += 1;
+                } else {
+                    cube.pos.x -= 10;
+                }
                 break;
             case keyCodes.KEY_RIGHT:
-                cube.pos.x += 10;
+                if (ev.shiftKey) {
+                    yDeg -= 1;
+                } else {
+                    cube.pos.x += 10;
+                }
                 break;
             case keyCodes.KEY_UP:
-                if (ev.ctrlKey) {
+                if (ev.shiftKey) {
+                    xDeg += 1;
+                } else if (ev.ctrlKey) {
                     cube.pos.z -= 10;
                 } else {
                     cube.pos.y -= 10;
                 }
                 break;
             case keyCodes.KEY_DOWN:
-                if (ev.ctrlKey) {
+                if (ev.shiftKey) {
+                    xDeg -= 1;
+                } else if (ev.ctrlKey) {
                     cube.pos.z += 10;
                 } else {
                     cube.pos.y += 10;
@@ -458,8 +472,31 @@ export function moveCube(
         ctx.stroke();
     }
 
+    function rotateY(points: any[], deg: number): any[] {
+        return points.map((p) => {
+            return {
+                x: p.x * Math.cos(deg) + p.z * Math.sin(deg),
+                y: p.y,
+                z: p.z * Math.cos(deg) - p.x * Math.sin(deg),
+            };
+        });
+    }
+
+    function rotateX(points: any[], deg: number): any[] {
+        return points.map((p) => {
+            return {
+                x: p.x,
+                y: p.y * Math.cos(deg) + p.z * Math.sin(deg),
+                z: p.z * Math.cos(deg) - p.y * Math.sin(deg),
+            };
+        });
+    }
+
     function update(): void {
-        const screenPoints = meshPoints.map((p) => {
+        let mp = rotateY(meshPoints, degToR(yDeg));
+        mp = rotateX(mp, degToR(xDeg));
+
+        const screenPoints = mp.map((p) => {
             const perspective = fl / (fl + baseZ + p.z + cube.pos.z);
             return {
                 x: (p.x + cube.pos.x) * perspective,
