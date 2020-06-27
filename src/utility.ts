@@ -137,3 +137,54 @@ export function cubicBezier(
         t * t * t * p3.y;
     return p;
 }
+
+export type tweenTarget = {
+    [property: string]: number;
+};
+
+export type easingFunction = (t: number, b: number, c: number, d: number) => number;
+
+export const linearTween: easingFunction = (t, b, c, d) => {
+    return b + (t / d) * c;
+};
+
+export const easeInQuad: easingFunction = (t, b, c, d) => {
+    return c * (t /= d) * t + b;
+};
+
+export function tween(
+    obj: any,
+    target: tweenTarget,
+    duration: number,
+    easingFunc: easingFunction,
+): void {
+    const start: tweenTarget = {};
+    const change: tweenTarget = {};
+    const startTime = Date.now();
+
+    // init
+    Object.keys(target).forEach((prop) => {
+        start[prop] = obj[prop];
+        change[prop] = target[prop] - start[prop];
+    });
+
+    // update
+    function update(): void {
+        const time = Date.now() - startTime;
+
+        if (time < duration) {
+            Object.keys(target).forEach((prop) => {
+                obj[prop] = easingFunc(time, start[prop], change[prop], duration);
+            });
+
+            // not done yet, keep looping
+            requestAnimationFrame(update);
+        } else {
+            Object.keys(target).forEach((prop) => {
+                obj[prop] = easingFunc(time, start[prop], change[prop], duration);
+            });
+        }
+    }
+
+    update();
+}

@@ -1,4 +1,4 @@
-import { randRange, degToR, range } from './utility';
+import { randRange, degToR, range, tween, linearTween, easeInQuad } from './utility';
 
 export function easingMoveBall(
     ctx: CanvasRenderingContext2D,
@@ -102,6 +102,36 @@ export function chasingMouse(
             ctx.arc(b.x, b.y, 10, 0, degToR(360));
             ctx.fill();
         });
+
+        win.requestAnimationFrame(render);
+    }
+
+    render();
+}
+export function tweenMoveBacll(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    win?: Window,
+    doc?: Document,
+): void {
+    const ball = {
+        x: randRange(0, width),
+        y: randRange(0, height),
+    };
+
+    doc.addEventListener('click', (ev) => {
+        const x = ev.clientX;
+        const y = ev.clientY;
+        tween(ball, { x, y }, 1000, easeInQuad);
+    });
+
+    function render(): void {
+        ctx.clearRect(0, 0, width, height);
+
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, 20, 0, degToR(360));
+        ctx.fill();
 
         win.requestAnimationFrame(render);
     }

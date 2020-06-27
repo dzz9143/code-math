@@ -45,7 +45,7 @@ import {
     weirdSpiralMesh,
     moveCube,
 } from './3d';
-import { easingMoveBall, chasingMouse } from './easing';
+import { easingMoveBall, chasingMouse, tweenMoveBacll } from './easing';
 
 function main(win: Window, doc: Document): void {
     // hello
@@ -104,7 +104,8 @@ function main(win: Window, doc: Document): void {
     // weirdSpiralMesh(context, width, height, win, doc);
     // moveCube(context, width, height, win, doc);
     // easingMoveBall(context, width, height, win, doc);
-    chasingMouse(context, width, height, win, doc);
+    // chasingMouse(context, width, height, win, doc);
+    tweenMoveBacll(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);
