@@ -188,3 +188,25 @@ export function tween(
 
     update();
 }
+
+interface Vec2 {
+    x: number;
+    y: number;
+}
+
+export function getLineIntersect(p0: Vec2, p1: Vec2, p2: Vec2, p3: Vec2): Vec2 {
+    const A1 = p0.y - p1.y;
+    const B1 = p1.x - p0.x;
+    const C1 = A1 * p0.x + B1 * p0.y;
+
+    const A2 = p2.y - p3.y;
+    const B2 = p3.x - p2.x;
+    const C2 = A2 * p2.x + B2 * p2.y;
+
+    const d = A1 * B2 - A2 * B1;
+
+    return {
+        x: (B2 * C1 - B1 * C2) / d,
+        y: (A1 * C2 - A2 * C1) / d,
+    };
+}

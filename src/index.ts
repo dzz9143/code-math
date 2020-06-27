@@ -46,6 +46,7 @@ import {
     moveCube,
 } from './3d';
 import { easingMoveBall, chasingMouse, tweenMoveBacll } from './easing';
+import { lineIntersect } from './lineIntersection';
 
 function main(win: Window, doc: Document): void {
     // hello
@@ -105,7 +106,8 @@ function main(win: Window, doc: Document): void {
     // moveCube(context, width, height, win, doc);
     // easingMoveBall(context, width, height, win, doc);
     // chasingMouse(context, width, height, win, doc);
-    tweenMoveBacll(context, width, height, win, doc);
+    // tweenMoveBacll(context, width, height, win, doc);
+    lineIntersect(context, width, height, win, doc);
 
     // for applications
     // gameApplication(context, width, height, win, doc);
