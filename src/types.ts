@@ -10,3 +10,8 @@ export interface Circle {
     y: number;
     radius: number;
 }
+
+export interface Point {
+    x: number;
+    y: number;
+}

@@ -107,10 +107,10 @@ function main(win: Window, doc: Document): void {
     // easingMoveBall(context, width, height, win, doc);
     // chasingMouse(context, width, height, win, doc);
     // tweenMoveBacll(context, width, height, win, doc);
-    lineIntersect(context, width, height, win, doc);
+    // lineIntersect(context, width, height, win, doc);
 
     // for applications
-    // gameApplication(context, width, height, win, doc);
+    gameApplication(context, width, height, win, doc);
 }
 
 window.onload = function onload(): void {
