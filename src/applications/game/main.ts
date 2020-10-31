@@ -10,6 +10,44 @@ type Tile = {
     id?: number;
 };
 
+type Position = {
+    x: number;
+    y: number;
+};
+
+class UserInput {
+    private keyDownMap: any;
+    private mouseClick: MouseEvent;
+
+    constructor(doc: Document) {
+        this.keyDownMap = {};
+        doc.addEventListener('keydown', this.keyDownEventListener);
+        doc.addEventListener('click', this.clickEventListener);
+    }
+
+    private clickEventListener = (ev: MouseEvent): void => {
+        this.mouseClick = ev;
+    };
+
+    private keyDownEventListener = (ev: KeyboardEvent): void => {
+        const keyCode = ev.keyCode;
+        this.keyDownMap[keyCode] = true;
+    };
+
+    public clear(): void {
+        this.keyDownMap = {};
+        this.mouseClick = null;
+    }
+
+    public getMouseClick(): MouseEvent {
+        return this.mouseClick;
+    }
+
+    public isKeyDown(code: number): boolean {
+        return this.keyDownMap[code];
+    }
+}
+
 class Grid {
     public row: number;
     public col: number;
@@ -24,6 +62,8 @@ class Grid {
     public left: number;
     public right: number;
 
+    public wall: Map<number, boolean>;
+
     constructor(row: number, col: number, tileSize: number, x = 0, y = 0) {
         this.row = row;
         this.col = col;
@@ -36,6 +76,8 @@ class Grid {
         this.right = this.x + this.col * this.tileSize;
         this.top = this.y;
         this.bottom = this.y + this.row * this.tileSize;
+
+        this.wall = new Map<number, boolean>();
     }
 
     public render(ctx: CanvasRenderingContext2D): void {
@@ -55,6 +97,15 @@ class Grid {
             ctx.lineTo(x, this.bottom);
         }
         ctx.stroke();
+
+        ctx.strokeStyle = 'rgb(255, 255, 255)';
+        this.wall.forEach((exist, tileId) => {
+            if (exist) {
+                const pos = this.getWorldPosFromTile(tileId);
+                ctx.fillRect(pos.x, pos.y, this.tileSize, this.tileSize);
+            }
+        });
+
         ctx.restore();
     }
 
@@ -76,23 +127,49 @@ class Grid {
         return this.createTile(r, c);
     }
 
+    private getWorldPosFromTile(tileId: number): Position {
+        const r = Math.floor(tileId / this.col);
+        const c = tileId % this.col;
+        return {
+            x: c * this.tileSize,
+            y: r * this.tileSize,
+        };
+    }
+
     private getNeighborTiles(cur: Tile): Tile[] {
         const neighborTiles: Tile[] = [];
         if (cur.r - 1 >= 0) {
             neighborTiles.push(this.createTile(cur.r - 1, cur.c));
         }
 
+        if (cur.r - 1 >= 0 && cur.c + 1 < this.col) {
+            neighborTiles.push(this.createTile(cur.r - 1, cur.c + 1));
+        }
+
         if (cur.c + 1 < this.col) {
             neighborTiles.push(this.createTile(cur.r, cur.c + 1));
+        }
+
+        if (cur.r + 1 < this.row && cur.c + 1 < this.col) {
+            neighborTiles.push(this.createTile(cur.r + 1, cur.c + 1));
         }
 
         if (cur.r + 1 < this.row) {
             neighborTiles.push(this.createTile(cur.r + 1, cur.c));
         }
 
+        if (cur.r + 1 < this.row && cur.c - 1 >= 0) {
+            neighborTiles.push(this.createTile(cur.r + 1, cur.c - 1));
+        }
+
         if (cur.c - 1 >= 0) {
             neighborTiles.push(this.createTile(cur.r, cur.c - 1));
         }
+
+        if (cur.r - 1 >= 0 && cur.c - 1 >= 0) {
+            neighborTiles.push(this.createTile(cur.r - 1, cur.c - 1));
+        }
+
         return neighborTiles;
     }
 
@@ -126,7 +203,9 @@ class Grid {
                 found = true;
                 break;
             }
-            const neighborTiles = this.getNeighborTiles(current);
+            const neighborTiles = this.getNeighborTiles(current).filter(
+                (t) => !this.wall.get(t.id),
+            );
             for (let i = 0; i < neighborTiles.length; i++) {
                 const neighborTile = neighborTiles[i];
                 const newCost = costSoFar[current.id] + 1;
@@ -153,6 +232,15 @@ class Grid {
 
         return tiles;
     }
+
+    public update(userInput: UserInput): void {
+        const click = userInput.getMouseClick();
+
+        if (click) {
+            const tile = this.getTileFromWorldPos(click.clientX, click.clientY);
+            this.wall.set(tile.id, !this.wall.get(tile.id));
+        }
+    }
 }
 
 class Square {
@@ -177,28 +265,6 @@ class Square {
         ctx.fillRect(this.x, this.y, this.w, this.h);
 
         ctx.restore();
-    }
-}
-
-class UserInput {
-    private keyDownMap: any;
-
-    constructor(doc: Document) {
-        this.keyDownMap = {};
-        doc.addEventListener('keydown', this.keyDownEventListener);
-    }
-
-    private keyDownEventListener = (ev: KeyboardEvent): void => {
-        const keyCode = ev.keyCode;
-        this.keyDownMap[keyCode] = true;
-    };
-
-    public clear(): void {
-        this.keyDownMap = {};
-    }
-
-    public isKeyDown(code: number): boolean {
-        return this.keyDownMap[code];
     }
 }
 
@@ -286,6 +352,7 @@ function main(
     const userInput = new UserInput(doc);
 
     function update(): void {
+        newGrid.update(userInput);
         newPlayer.update(userInput);
         newEnemy.update();
         userInput.clear();
