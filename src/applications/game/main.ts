@@ -1,7 +1,8 @@
 import PQ from 'priorityqueuejs';
+import { Vector } from '../../vector';
 
 import { keyCodes } from '../../constant';
-import { clamp, randRange } from '../../utility';
+import { clamp, distance, randRange } from '../../utility';
 
 type Tile = {
     c: number;
@@ -127,7 +128,7 @@ class Grid {
         return this.createTile(r, c);
     }
 
-    private getWorldPosFromTile(tileId: number): Position {
+    public getWorldPosFromTile(tileId: number): Position {
         const r = Math.floor(tileId / this.col);
         const c = tileId % this.col;
         return {
@@ -142,33 +143,33 @@ class Grid {
             neighborTiles.push(this.createTile(cur.r - 1, cur.c));
         }
 
-        if (cur.r - 1 >= 0 && cur.c + 1 < this.col) {
-            neighborTiles.push(this.createTile(cur.r - 1, cur.c + 1));
-        }
+        // if (cur.r - 1 >= 0 && cur.c + 1 < this.col) {
+        //     neighborTiles.push(this.createTile(cur.r - 1, cur.c + 1));
+        // }
 
         if (cur.c + 1 < this.col) {
             neighborTiles.push(this.createTile(cur.r, cur.c + 1));
         }
 
-        if (cur.r + 1 < this.row && cur.c + 1 < this.col) {
-            neighborTiles.push(this.createTile(cur.r + 1, cur.c + 1));
-        }
+        // if (aaacur.r + 1 < this.row && cur.c + 1 < this.col) {
+        //     neighborTiles.push(this.createTile(cur.r + 1, cur.c + 1));
+        // }
 
         if (cur.r + 1 < this.row) {
             neighborTiles.push(this.createTile(cur.r + 1, cur.c));
         }
 
-        if (cur.r + 1 < this.row && cur.c - 1 >= 0) {
-            neighborTiles.push(this.createTile(cur.r + 1, cur.c - 1));
-        }
+        // if (cur.r + 1 < this.row && cur.c - 1 >= 0) {
+        //     neighborTiles.push(this.createTile(cur.r + 1, cur.c - 1));
+        // }
 
         if (cur.c - 1 >= 0) {
             neighborTiles.push(this.createTile(cur.r, cur.c - 1));
         }
 
-        if (cur.r - 1 >= 0 && cur.c - 1 >= 0) {
-            neighborTiles.push(this.createTile(cur.r - 1, cur.c - 1));
-        }
+        // if (cur.r - 1 >= 0 && cur.c - 1 >= 0) {
+        //     neighborTiles.push(this.createTile(cur.r - 1, cur.c - 1));
+        // }
 
         return neighborTiles;
     }
@@ -266,6 +267,13 @@ class Square {
 
         ctx.restore();
     }
+
+    public getCenterPos(): Position {
+        return {
+            x: this.x + this.w / 2,
+            y: this.y + this.h / 2,
+        };
+    }
 }
 
 class Player extends Square {
@@ -305,6 +313,11 @@ class Enemy extends Square {
     private grid: Grid;
     private player: Player;
     private tiles: Tile[];
+
+    public vec: Vector;
+    public speed: number;
+    public targetTile: Tile;
+
     constructor(grid: Grid, player: Player) {
         super(
             grid.x + randRange(grid.left, grid.right),
@@ -316,10 +329,74 @@ class Enemy extends Square {
         this.player = player;
         this.color = 'rgb(0, 200, 0)';
         this.tiles = [];
+        // for movement
+        this.vec = new Vector(0, 0);
+        this.speed = 5;
+        // this.targetTile = null;
     }
 
     update(): void {
-        this.tiles = this.grid.findPath(this.x, this.y, this.player.x, this.player.y);
+        const centerPos = this.getCenterPos();
+        const playerPos = this.player.getCenterPos();
+
+        if (!this.targetTile) {
+            this.tiles = this.grid.findPath(
+                centerPos.x,
+                centerPos.y,
+                playerPos.x,
+                playerPos.y,
+            );
+
+            if (!this.tiles || this.tiles.length === 0) {
+                this.vec.setLength(0);
+                return;
+            }
+
+            const nextTile = this.tiles[this.tiles.length - 1];
+            this.targetTile = nextTile;
+        } else {
+            // check if it near the target Tile
+            const tilePos = this.grid.getWorldPosFromTile(this.targetTile.id);
+            const tileCenterPos: Position = {
+                x: tilePos.x + this.grid.tileSize / 2,
+                y: tilePos.y + this.grid.tileSize / 2,
+            };
+
+            if (
+                distance(tileCenterPos.x, tileCenterPos.y, centerPos.x, centerPos.y) <= 3
+            ) {
+                // update target tile
+                this.tiles = this.grid.findPath(
+                    centerPos.x,
+                    centerPos.y,
+                    playerPos.x,
+                    playerPos.y,
+                );
+
+                if (!this.tiles || this.tiles.length === 0) {
+                    this.vec.setLength(0);
+                    return;
+                }
+
+                const nextTile = this.tiles[this.tiles.length - 1];
+                this.targetTile = nextTile;
+            }
+        }
+
+        // update velocity based on new target tile
+        const tilePos = this.grid.getWorldPosFromTile(this.targetTile.id);
+        const tileCenterPos: Position = {
+            x: tilePos.x + this.grid.tileSize / 2,
+            y: tilePos.y + this.grid.tileSize / 2,
+        };
+        const enemyCenterPos = this.getCenterPos();
+        this.vec.x = tileCenterPos.x - enemyCenterPos.x;
+        this.vec.y = tileCenterPos.y - enemyCenterPos.y;
+        this.vec.setLength(this.speed);
+
+        // update position
+        this.x += this.vec.x;
+        this.y += this.vec.y;
     }
 
     render(ctx: CanvasRenderingContext2D): void {
@@ -331,8 +408,8 @@ class Enemy extends Square {
             ctx.fillRect(
                 this.grid.x + t.c * this.grid.tileSize,
                 this.grid.y + t.r * this.grid.tileSize,
-                50,
-                50,
+                this.grid.tileSize,
+                this.grid.tileSize,
             );
         });
         ctx.restore();
