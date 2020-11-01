@@ -3,7 +3,10 @@
         "baseUrl": ".",
         "module": "commonjs",
         "moduleResolution": "node",
-        "lib": ["DOM"],
+        "lib": [
+            "DOM",
+            "ES6"
+        ],
         "outDir": "lib",
         "target": "es6",
         "sourceMap": true,
