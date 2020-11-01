@@ -1,4 +1,5 @@
 import Delaunator from 'delaunator';
+import SimplexNoise from 'simplex-noise';
 import { degToR } from '../../utility';
 
 type Point = {
@@ -12,6 +13,7 @@ class Voronoi {
     numOfHalfEdges: number;
     points: Point[];
     centroids: Point[];
+    elevation: number[];
     delaunay: Delaunator<any>;
 
     constructor(gridSize: number) {
@@ -19,6 +21,7 @@ class Voronoi {
         const jitter = 0.5;
         this.points = [];
         this.centroids = [];
+        this.elevation = [];
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
                 this.points.push({
@@ -43,6 +46,50 @@ class Voronoi {
         for (let tid = 0; tid < this.numOfTriangles; tid++) {
             this.centroids[tid] = this.getCentroidOfTriangle(tid);
         }
+
+        // generate noise
+        const waveLength = 1;
+        const noise = new SimplexNoise();
+
+        this.points.forEach((p, idx) => {
+            const nx = p.x / this.gridSize - 1 / 2;
+            const ny = p.y / this.gridSize - 1 / 2;
+            // // start with noise:
+            // this.elevation[idx] =
+            //     (1 + noise.noise2D(nx / waveLength, ny / waveLength)) / 2;
+            // // modify noise to make islands:
+            // const d = 2 * Math.max(Math.abs(nx), Math.abs(ny)); // should be 0-1
+            // this.elevation[idx] = (1 + this.elevation[idx] - d) / 2;
+
+            // my own test play
+            this.elevation[idx] = noise.noise2D(nx, ny);
+        });
+    }
+
+    getEdgeIdsAroundPoint(startEid: number): number[] {
+        const result = [];
+        let incoming = startEid;
+        do {
+            result.push(incoming);
+            const outgoing = this.getNextEdgeId(incoming);
+            incoming = this.getOppositeEdge(outgoing);
+        } while (incoming !== -1 && incoming !== startEid);
+        return result;
+    }
+
+    getVoronoiCells(): any[] {
+        const result = [];
+        const seen = new Set();
+        for (let eid = 0; eid < this.numOfHalfEdges; eid++) {
+            const pid = this.getStartPointOfEdge(this.getNextEdgeId(eid));
+            if (!seen.has(pid)) {
+                seen.add(pid);
+                const eids = this.getEdgeIdsAroundPoint(eid);
+                const tids = eids.map((eid) => this.getTriangleIdOfEdge(eid));
+                result.push(tids.map((tid) => this.centroids[tid]));
+            }
+        }
+        return result;
     }
 
     getCentroidOfTriangle(tid: number): Point {
@@ -79,6 +126,10 @@ class Voronoi {
 
     getOppositeEdge(eid: number): number {
         return this.delaunay.halfedges[eid];
+    }
+
+    getNextEdgeId(eid: number): number {
+        return eid % 3 === 2 ? eid - 2 : eid + 1;
     }
 
     render(ctx: CanvasRenderingContext2D, width: number, height: number): void {
@@ -123,29 +174,49 @@ class Voronoi {
             ctx.fill();
         });
 
-        // render voronoi cell
-        for (let eid = 0; eid < this.numOfHalfEdges; eid++) {
-            if (eid < this.delaunay.halfedges[eid]) {
-                const p0 = this.centroids[this.getTriangleIdOfEdge(eid)];
-                const p1 = this.centroids[
-                    this.getTriangleIdOfEdge(this.getOppositeEdge(eid))
-                ];
+        // render cells
+        const cells = this.getVoronoiCells();
 
-                ctx.beginPath();
-                ctx.strokeStyle = 'rgb(100, 100, 100)';
-                ctx.lineWidth = 0.02;
-                ctx.moveTo(p0.x, p0.y);
-                ctx.lineTo(p1.x, p1.y);
-                ctx.stroke();
-            }
-        }
-
-        ctx.fillStyle = 'hsl(0, 50%, 50%)';
-        this.centroids.forEach((p) => {
+        cells.forEach((points: Point[], idx) => {
+            ctx.fillStyle = 'hsl(108,20%,50%)';
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 0.05, 0, degToR(360));
+            ctx.fillStyle =
+                this.elevation[idx] < 0.5 ? 'hsl(240, 30%, 50%)' : 'hsl(90, 20%, 50%)';
+            const p0 = points[0];
+            ctx.moveTo(p0.x, p0.y);
+            for (let i = 1; i < points.length; i++) {
+                const p = points[i];
+                ctx.lineTo(p.x, p.y);
+            }
+            ctx.lineTo(p0.x, p0.y);
+
             ctx.fill();
         });
+
+        // // render voronoi edges
+        // for (let eid = 0; eid < this.numOfHalfEdges; eid++) {
+        //     if (eid < this.delaunay.halfedges[eid]) {
+        //         const p0 = this.centroids[this.getTriangleIdOfEdge(eid)];
+        //         const p1 = this.centroids[
+        //             this.getTriangleIdOfEdge(this.getOppositeEdge(eid))
+        //         ];
+
+        //         ctx.beginPath();
+        //         ctx.strokeStyle = 'rgb(100, 100, 100)';
+        //         ctx.lineWidth = 0.02;
+        //         ctx.moveTo(p0.x, p0.y);
+        //         ctx.lineTo(p1.x, p1.y);
+        //         ctx.stroke();
+        //     }
+        // }
+
+        // // render centroids
+        // ctx.fillStyle = 'hsl(0, 50%, 50%)';
+        // this.centroids.forEach((p) => {
+        //     ctx.beginPath();
+        //     ctx.arc(p.x, p.y, 0.05, 0, degToR(360));
+        //     ctx.fill();
+        // });
 
         ctx.restore();
     }
@@ -233,7 +304,7 @@ function main(
     //     ctx.restore();
     // }
 
-    const voronoi = new Voronoi(15);
+    const voronoi = new Voronoi(25);
 
     function render(): void {
         ctx.clearRect(0, 0, width, height);
