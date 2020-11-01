@@ -48,12 +48,12 @@ class Voronoi {
         }
 
         // generate noise
-        const waveLength = 1;
+        const waveLength = 0.5;
         const noise = new SimplexNoise();
 
         this.points.forEach((p, idx) => {
-            const nx = p.x / this.gridSize - 1 / 2;
-            const ny = p.y / this.gridSize - 1 / 2;
+            const nx = p.x / this.gridSize - 0.5;
+            const ny = p.y / this.gridSize - 0.5;
             // // start with noise:
             // this.elevation[idx] =
             //     (1 + noise.noise2D(nx / waveLength, ny / waveLength)) / 2;
@@ -62,8 +62,13 @@ class Voronoi {
             // this.elevation[idx] = (1 + this.elevation[idx] - d) / 2;
 
             // my own test play
-            this.elevation[idx] = noise.noise2D(nx, ny);
+            this.elevation[idx] =
+                (1 + noise.noise2D(nx / waveLength, ny / waveLength)) / 2;
+            const d = 2 * Math.max(Math.abs(nx), Math.abs(ny));
+            console.log(nx, ny, d);
+            this.elevation[idx] = (1 + this.elevation[idx] - d) / 2;
         });
+        console.log('this.elevation:', this.elevation);
     }
 
     getEdgeIdsAroundPoint(startEid: number): number[] {
@@ -86,7 +91,11 @@ class Voronoi {
                 seen.add(pid);
                 const eids = this.getEdgeIdsAroundPoint(eid);
                 const tids = eids.map((eid) => this.getTriangleIdOfEdge(eid));
-                result.push(tids.map((tid) => this.centroids[tid]));
+                // result.push(tids.map((tid) => this.centroids[tid]));
+                result.push({
+                    pid: this.delaunay.triangles[this.getNextEdgeId(eid)],
+                    points: tids.map((tid) => this.centroids[tid]),
+                });
             }
         }
         return result;
@@ -177,11 +186,11 @@ class Voronoi {
         // render cells
         const cells = this.getVoronoiCells();
 
-        cells.forEach((points: Point[], idx) => {
+        cells.forEach(({ points, pid }) => {
             ctx.fillStyle = 'hsl(108,20%,50%)';
             ctx.beginPath();
             ctx.fillStyle =
-                this.elevation[idx] < 0.5 ? 'hsl(240, 30%, 50%)' : 'hsl(90, 20%, 50%)';
+                this.elevation[pid] < 0.5 ? 'hsl(240, 30%, 50%)' : 'hsl(90, 20%, 50%)';
             const p0 = points[0];
             ctx.moveTo(p0.x, p0.y);
             for (let i = 1; i < points.length; i++) {
