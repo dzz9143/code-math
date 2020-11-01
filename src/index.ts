@@ -28,6 +28,7 @@ import {
 } from './collisionDetection';
 
 import gameApplication from './applications/game/main';
+import voronoi from './applications/game/voronoi';
 import {
     simpleSpring,
     simpleMoveSpring,
@@ -110,7 +111,8 @@ function main(win: Window, doc: Document): void {
     // lineIntersect(context, width, height, win, doc);
 
     // for applications
-    gameApplication(context, width, height, win, doc);
+    // gameApplication(context, width, height, win, doc);
+    voronoi(context, width, height, win, doc);
 }
 
 window.onload = function onload(): void {
