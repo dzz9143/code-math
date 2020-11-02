@@ -14,14 +14,17 @@ class Voronoi {
     points: Point[];
     centroids: Point[];
     elevation: number[];
+    moisture: number[];
     delaunay: Delaunator<any>;
 
     constructor(gridSize: number) {
         // seed points
-        const jitter = 0.5;
+        // const jitter = 0.5;
+        const jitter = 0.2;
         this.points = [];
         this.centroids = [];
         this.elevation = [];
+        this.moisture = [];
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
                 this.points.push({
@@ -54,20 +57,17 @@ class Voronoi {
         this.points.forEach((p, idx) => {
             const nx = p.x / this.gridSize - 0.5;
             const ny = p.y / this.gridSize - 0.5;
-            // // start with noise:
-            // this.elevation[idx] =
-            //     (1 + noise.noise2D(nx / waveLength, ny / waveLength)) / 2;
-            // // modify noise to make islands:
-            // const d = 2 * Math.max(Math.abs(nx), Math.abs(ny)); // should be 0-1
-            // this.elevation[idx] = (1 + this.elevation[idx] - d) / 2;
 
-            // my own test play
-            this.elevation[idx] =
+            let e = (1 + noise.noise2D(nx / waveLength, ny / waveLength)) / 2;
+            // const d = 2 * Math.max(Math.abs(nx), Math.abs(ny));
+            const d = Math.abs(nx) + Math.abs(ny);
+            e = (1 + e - d) / 2;
+            e = Math.round(e * 18) / 18;
+            this.elevation[idx] = e;
+            this.moisture[idx] =
                 (1 + noise.noise2D(nx / waveLength, ny / waveLength)) / 2;
-            const d = 2 * Math.max(Math.abs(nx), Math.abs(ny));
-            console.log(nx, ny, d);
-            this.elevation[idx] = (1 + this.elevation[idx] - d) / 2;
         });
+
         console.log('this.elevation:', this.elevation);
     }
 
@@ -99,6 +99,29 @@ class Voronoi {
             }
         }
         return result;
+    }
+
+    getBiomeColor(pid: number): string {
+        let e = (this.elevation[pid] - 0.5) * 2,
+            m = this.moisture[pid];
+        let r = 0,
+            g = 0,
+            b = 0;
+        if (e < 0.0) {
+            r = 48 + 48 * e;
+            g = 64 + 64 * e;
+            b = 127 + 127 * e;
+        } else {
+            m = m * (1 - e);
+            e = e ** 4; // tweaks
+            r = 210 - 100 * m;
+            g = 185 - 45 * m;
+            b = 139 - 45 * m;
+            (r = 255 * e + r * (1 - e)),
+                (g = 255 * e + g * (1 - e)),
+                (b = 255 * e + b * (1 - e));
+        }
+        return `rgb(${r | 0}, ${g | 0}, ${b | 0})`;
     }
 
     getCentroidOfTriangle(tid: number): Point {
@@ -189,8 +212,8 @@ class Voronoi {
         cells.forEach(({ points, pid }) => {
             ctx.fillStyle = 'hsl(108,20%,50%)';
             ctx.beginPath();
-            ctx.fillStyle =
-                this.elevation[pid] < 0.5 ? 'hsl(240, 30%, 50%)' : 'hsl(90, 20%, 50%)';
+            ctx.fillStyle = this.getBiomeColor(pid);
+            // this.elevation[pid] < 0.45 ? 'hsl(240, 30%, 50%)' : 'hsl(90, 20%, 50%)';
             const p0 = points[0];
             ctx.moveTo(p0.x, p0.y);
             for (let i = 1; i < points.length; i++) {
@@ -313,7 +336,7 @@ function main(
     //     ctx.restore();
     // }
 
-    const voronoi = new Voronoi(25);
+    const voronoi = new Voronoi(32);
 
     function render(): void {
         ctx.clearRect(0, 0, width, height);
