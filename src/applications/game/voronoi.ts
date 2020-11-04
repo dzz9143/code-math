@@ -1,8 +1,30 @@
 import Delaunator from 'delaunator';
 import SimplexNoise from 'simplex-noise';
-import { distance, map } from '../../utility';
+
+function distance(x1: number, y1: number, x2: number, y2: number): number {
+    const dx = x1 - x2;
+    const dy = y1 - y2;
+
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+const keyCodes = {
+    KEY_LEFT: 37,
+    KEY_UP: 38,
+    KEY_RIGHT: 39,
+    KEY_DOWN: 40,
+    KEY_A: 65,
+    KEY_S: 83,
+    KEY_D: 68,
+    KEY_W: 87,
+};
 
 type Point = {
+    x: number;
+    y: number;
+};
+
+type Position = {
     x: number;
     y: number;
 };
@@ -23,6 +45,99 @@ type InitOptions = {
         mesh: boolean;
     };
 };
+
+class Square {
+    public x: number;
+    public y: number;
+    public w: number;
+    public h: number;
+    public color: string;
+    constructor(x: number, y: number, w: number, h: number) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+
+        this.color = 'rgb(255, 255, 255)';
+    }
+
+    render(ctx: CanvasRenderingContext2D): void {
+        ctx.save();
+
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+
+        ctx.restore();
+    }
+
+    public getCenterPos(): Position {
+        return {
+            x: this.x + this.w / 2,
+            y: this.y + this.h / 2,
+        };
+    }
+}
+
+class UserInput {
+    private keyDownMap: any;
+    private mouseClick: MouseEvent;
+
+    constructor(doc: Document) {
+        this.keyDownMap = {};
+        doc.addEventListener('keydown', this.keyDownEventListener);
+        doc.addEventListener('click', this.clickEventListener);
+    }
+
+    private clickEventListener = (ev: MouseEvent): void => {
+        this.mouseClick = ev;
+    };
+
+    private keyDownEventListener = (ev: KeyboardEvent): void => {
+        const keyCode = ev.keyCode;
+        this.keyDownMap[keyCode] = true;
+    };
+
+    public clear(): void {
+        this.keyDownMap = {};
+        this.mouseClick = null;
+    }
+
+    public getMouseClick(): MouseEvent {
+        return this.mouseClick;
+    }
+
+    public isKeyDown(code: number): boolean {
+        return this.keyDownMap[code];
+    }
+}
+
+class Player extends Square {
+    private speed: number;
+
+    constructor() {
+        super(0, 0, 30, 30);
+        this.speed = 15;
+        this.color = 'rgb(200, 0, 0)';
+    }
+
+    public update(userInput: UserInput): void {
+        if (userInput.isKeyDown(keyCodes.KEY_D)) {
+            this.x += this.speed;
+        }
+
+        if (userInput.isKeyDown(keyCodes.KEY_A)) {
+            this.x -= this.speed;
+        }
+
+        if (userInput.isKeyDown(keyCodes.KEY_W)) {
+            this.y -= this.speed;
+        }
+
+        if (userInput.isKeyDown(keyCodes.KEY_S)) {
+            this.y += this.speed;
+        }
+    }
+}
 
 class Voronoi {
     numOfTriangles: number;
@@ -338,16 +453,26 @@ function main(
         row: 32,
     });
 
+    const player = new Player();
+    const userInput = new UserInput(doc);
+
     doc.addEventListener('click', (e) => {
         voronoi.getRegionFromWorldPos(e.clientX, e.clientY);
     });
 
+    function update(): void {
+        player.update(userInput);
+        userInput.clear();
+    }
+
     function render(): void {
         ctx.clearRect(0, 0, width, height);
         voronoi.render(ctx);
+        player.render(ctx);
     }
 
     function mainLoop(): void {
+        update();
         render();
         win.requestAnimationFrame(mainLoop);
     }
