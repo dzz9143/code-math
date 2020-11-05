@@ -42,9 +42,13 @@ type Region = {
     position: Position;
 };
 
-type Vec2D = {
-    x: number;
-    y: number;
+type Edge = {
+    d0: Point;
+    d1: Point;
+    v0: Point;
+    v1: Point;
+    r0: number;
+    r1: number;
 };
 
 type InitOptions = {
@@ -92,8 +96,8 @@ class Square {
 }
 
 class UserInput {
-    private keyDownMap: any;
-    private mouseClick: MouseEvent;
+    public keyDownMap: any;
+    public mouseClick: MouseEvent;
 
     constructor(doc: Document) {
         this.keyDownMap = {};
@@ -101,11 +105,11 @@ class UserInput {
         doc.addEventListener('click', this.clickEventListener);
     }
 
-    private clickEventListener = (ev: MouseEvent): void => {
+    public clickEventListener = (ev: MouseEvent): void => {
         this.mouseClick = ev;
     };
 
-    private keyDownEventListener = (ev: KeyboardEvent): void => {
+    public keyDownEventListener = (ev: KeyboardEvent): void => {
         const keyCode = ev.keyCode;
         this.keyDownMap[keyCode] = true;
     };
@@ -125,7 +129,7 @@ class UserInput {
 }
 
 class Player extends Square {
-    private speed: number;
+    public speed: number;
 
     constructor() {
         super(0, 0, 10, 10);
@@ -153,12 +157,12 @@ class Player extends Square {
 }
 
 class Enemy extends Square {
-    private speed: number;
-    private map: Voronoi;
-    private vol: Vector;
+    public speed: number;
+    public map: Voronoi;
+    public vol: Vector;
 
-    private targetRegion: Region;
-    private nextRegion: Region;
+    public targetRegion: Region;
+    public nextRegion: Region;
 
     constructor(map: Voronoi) {
         super(0, 0, 10, 10);
@@ -229,6 +233,7 @@ class Voronoi {
     centroids: Point[];
     elevation: number[];
     moisture: number[];
+    edges: Edge[];
     delaunay: Delaunator<Point>;
     options: InitOptions;
 
@@ -277,7 +282,7 @@ class Voronoi {
             this.centroids[tid] = this.getCentroidOfTriangle(tid);
         }
 
-        // save all edges
+        // save all connections
         this.connections = new Map<number, number[]>();
         for (let eid = 0; eid < this.numOfHalfEdges; eid++) {
             const startPid = this.delaunay.triangles[eid];
@@ -294,6 +299,26 @@ class Voronoi {
             }
         }
 
+        // get all edges
+        this.edges = [];
+        for (let eid = 0; eid < this.numOfHalfEdges; eid++) {
+            if (eid < this.delaunay.halfedges[eid]) {
+                const incoming = eid;
+                const outgoing = this.getOppositeEdge(eid);
+                this.edges[eid] = {
+                    d0: this.getStartPointOfEdge(incoming),
+                    d1: this.getStartPointOfEdge(outgoing),
+                    v0: this.centroids[this.getTriangleIdOfEdge(incoming)],
+                    v1: this.centroids[this.getTriangleIdOfEdge(outgoing)],
+                    r0: this.delaunay.triangles[incoming],
+                    r1: this.delaunay.triangles[outgoing],
+                };
+            }
+        }
+
+        console.log('this.edges:', this.edges);
+        console.log('this.points:', this.points);
+        console.log('this.triangles:', this.numOfHalfEdges / 2);
         // generate noise
         const waveLength = 0.5;
         const noise = new SimplexNoise();
@@ -317,7 +342,7 @@ class Voronoi {
         return this.elevation[pid] >= 0.5;
     }
 
-    private getEdgeIdsAroundPoint(startEid: number): number[] {
+    public getEdgeIdsAroundPoint(startEid: number): number[] {
         const result = [];
         let incoming = startEid;
         do {
@@ -329,7 +354,7 @@ class Voronoi {
     }
 
     // get pid & points of a voronoi cell (region)
-    private getVoronoiCells(): Cell[] {
+    public getVoronoiCells(): Cell[] {
         const result = [];
         const seen = new Set();
         for (let eid = 0; eid < this.numOfHalfEdges; eid++) {
@@ -348,48 +373,48 @@ class Voronoi {
     }
 
     // calculate color based on elevation & moisture for each point(region, cell)
-    private getBiomeColor(pid: number): string {
-        const e = this.elevation[pid];
+    public getBiomeColor(pid: number): string {
+        // const e = this.elevation[pid];
         // const step = Math.floor(e / 0.1);
-        if (e > 0.5) {
-            return 'rgb(200, 200, 200)';
-        } else {
-            // const r = 50 + 20 * step;
-            if (e > 0.45) {
-                return '#1b338d';
-            } else if (e > 0.35) {
-                return '#f796b9';
-            } else if (e > 0.25) {
-                return '#7bcfed';
-            } else {
-                return '#813ea2';
-            }
-            // return `rgb(${r},  ${r}, ${r})`;
-        }
-
-        // let e = (this.elevation[pid] - 0.5) * 2,
-        //     m = this.moisture[pid];
-        // let r = 0,
-        //     g = 0,
-        //     b = 0;
-        // if (e < 0.0) {
-        //     r = 48 + 48 * e;
-        //     g = 64 + 64 * e;
-        //     b = 127 + 127 * e;
+        // if (e > 0.5) {
+        //     return 'rgb(200, 200, 200)';
         // } else {
-        //     m = m * (1 - e);
-        //     e = e ** 4; // tweaks
-        //     r = 210 - 100 * m;
-        //     g = 185 - 45 * m;
-        //     b = 139 - 45 * m;
-        //     (r = 255 * e + r * (1 - e)),
-        //         (g = 255 * e + g * (1 - e)),
-        //         (b = 255 * e + b * (1 - e));
+        //     // const r = 50 + 20 * step;
+        //     if (e > 0.45) {
+        //         return '#1b338d';
+        //     } else if (e > 0.35) {
+        //         return '#f796b9';
+        //     } else if (e > 0.25) {
+        //         return '#7bcfed';
+        //     } else {
+        //         return '#813ea2';
+        //     }
+        //     // return `rgb(${r},  ${r}, ${r})`;
         // }
-        // return `rgb(${r | 0}, ${g | 0}, ${b | 0})`;
+
+        let e = (this.elevation[pid] - 0.5) * 2,
+            m = this.moisture[pid];
+        let r = 0,
+            g = 0,
+            b = 0;
+        if (e < 0.0) {
+            r = 48 + 48 * e;
+            g = 64 + 64 * e;
+            b = 127 + 127 * e;
+        } else {
+            m = m * (1 - e);
+            e = e ** 4; // tweaks
+            r = 210 - 100 * m;
+            g = 185 - 45 * m;
+            b = 139 - 45 * m;
+            (r = 255 * e + r * (1 - e)),
+                (g = 255 * e + g * (1 - e)),
+                (b = 255 * e + b * (1 - e));
+        }
+        return `rgb(${r | 0}, ${g | 0}, ${b | 0})`;
     }
 
-    private getCentroidOfTriangle(tid: number): Point {
+    public getCentroidOfTriangle(tid: number): Point {
         const eids = this.getEdgeIdsOfTriangle(tid);
         let sumOfX = 0;
         let sumOfY = 0;
@@ -404,16 +429,16 @@ class Voronoi {
         };
     }
 
-    private getTriangleIdOfEdge(eid: number): number {
+    public getTriangleIdOfEdge(eid: number): number {
         return Math.floor(eid / 3);
     }
 
-    private getEdgeIdsOfTriangle(tid: number): number[] {
+    public getEdgeIdsOfTriangle(tid: number): number[] {
         const s = tid * 3;
         return [s, s + 1, s + 2];
     }
 
-    private getStartPointOfEdge(eid: number): Point {
+    public getStartPointOfEdge(eid: number): Point {
         const pid = this.delaunay.triangles[eid];
         if (pid === -1) {
             return null;
@@ -421,7 +446,7 @@ class Voronoi {
         return this.points[pid];
     }
 
-    private getEndPointOfEdge(eid: number): Point {
+    public getEndPointOfEdge(eid: number): Point {
         const pid = this.delaunay.triangles[this.getOppositeEdge(eid)];
         if (pid === -1) {
             return null;
@@ -430,11 +455,11 @@ class Voronoi {
         return this.points[pid];
     }
 
-    private getOppositeEdge(eid: number): number {
+    public getOppositeEdge(eid: number): number {
         return this.delaunay.halfedges[eid];
     }
 
-    private getNextEdgeId(eid: number): number {
+    public getNextEdgeId(eid: number): number {
         return eid % 3 === 2 ? eid - 2 : eid + 1;
     }
 
@@ -492,24 +517,52 @@ class Voronoi {
         }
 
         // render each regions (aka cells)
-        const cells = this.getVoronoiCells();
+        // const cells = this.getVoronoiCells();
 
-        cells.forEach(({ points, pid }) => {
+        // cells.forEach(({ points, pid }) => {
+        //     if (this.elevation[pid] >= 0.5) return;
+        //     ctx.beginPath();
+        //     if (this.selectPids.has(pid)) {
+        //         ctx.fillStyle = 'red';
+        //     } else {
+        //         ctx.fillStyle = this.getBiomeColor(pid);
+        //     }
+        //     const p0 = points[0];
+        //     ctx.moveTo(p0.x, p0.y);
+        //     for (let i = 1; i < points.length; i++) {
+        //         const p = points[i];
+        //         ctx.lineTo(p.x, p.y);
+        //     }
+        //     ctx.lineTo(p0.x, p0.y);
+
+        //     ctx.fill();
+        // });
+
+        this.edges.forEach((e, eid) => {
+            // if (eid < this.delaunay.halfedges[eid]) {
+            if (this.elevation[e.r0] > 0.5 && this.elevation[e.r1] > 0.5) return;
+            // if (this.elevation[e.r0] > 0.5 && this.elevation[e.r1] > 0.5) {
             ctx.beginPath();
-            if (this.selectPids.has(pid)) {
-                ctx.fillStyle = 'red';
-            } else {
-                ctx.fillStyle = this.getBiomeColor(pid);
-            }
-            const p0 = points[0];
-            ctx.moveTo(p0.x, p0.y);
-            for (let i = 1; i < points.length; i++) {
-                const p = points[i];
-                ctx.lineTo(p.x, p.y);
-            }
-            ctx.lineTo(p0.x, p0.y);
+            ctx.lineWidth = 0.01;
+            // ctx.moveTo(e.d0.x, e.d0.y);
+            // ctx.lineTo(e.d1.x, e.d1.y);
 
-            ctx.fill();
+            ctx.moveTo(e.v0.x, e.v0.y);
+            ctx.lineTo(e.v1.x, e.v1.y);
+            ctx.stroke();
+
+            // console.log(e);
+            // ctx.beginPath();
+            // const p0 = this.points[e.r0];
+            // const p1 = this.points[e.r1];
+            // console.log('p0', p0);
+            // ctx.arc(p0.x, p0.y, 0.05, 0, Math.PI * 2);
+            // ctx.fill();
+
+            // ctx.arc(p1.x, p1.y, 0.05, 0, Math.PI * 2);
+            // ctx.fill();
+            // }
+            // }
         });
 
         ctx.restore();
@@ -651,8 +704,8 @@ function main(
         y: 0,
         width: 640,
         height: 640,
-        col: 56,
-        row: 56,
+        col: 24,
+        row: 24,
     });
 
     const player = new Player();
@@ -703,7 +756,7 @@ function main(
     }
 
     function mainLoop(): void {
-        update();
+        // update();
         render();
         win.requestAnimationFrame(mainLoop);
     }
