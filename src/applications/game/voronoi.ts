@@ -1,5 +1,8 @@
 import Delaunator from 'delaunator';
 import SimplexNoise from 'simplex-noise';
+import PQ from 'priorityqueuejs';
+// import { randRange } from 'src/utility';
+import { Vector } from '../../vector';
 
 function distance(x1: number, y1: number, x2: number, y2: number): number {
     const dx = x1 - x2;
@@ -32,6 +35,16 @@ type Position = {
 type Cell = {
     pid: number;
     points: Point[];
+};
+
+type Region = {
+    pid: number;
+    position: Position;
+};
+
+type Vec2D = {
+    x: number;
+    y: number;
 };
 
 type InitOptions = {
@@ -115,8 +128,8 @@ class Player extends Square {
     private speed: number;
 
     constructor() {
-        super(0, 0, 30, 30);
-        this.speed = 15;
+        super(0, 0, 10, 10);
+        this.speed = 30;
         this.color = 'rgb(200, 0, 0)';
     }
 
@@ -136,6 +149,74 @@ class Player extends Square {
         if (userInput.isKeyDown(keyCodes.KEY_S)) {
             this.y += this.speed;
         }
+    }
+}
+
+class Enemy extends Square {
+    private speed: number;
+    private map: Voronoi;
+    private vol: Vector;
+
+    private targetRegion: Region;
+    private nextRegion: Region;
+
+    constructor(map: Voronoi) {
+        super(0, 0, 10, 10);
+
+        this.map = map;
+        this.speed = 5;
+        this.color = 'rgb(0, 200, 0)';
+
+        this.vol = new Vector(0, 0);
+
+        this.targetRegion = null;
+        this.nextRegion = null;
+    }
+
+    public setTarget(target: Position): void {
+        this.targetRegion = this.map.getNearestRegionFromWorldPos(target.x, target.y);
+        this.nextRegion = null;
+    }
+
+    public update(): void {
+        if (!this.targetRegion) {
+            this.vol.setLength(0);
+            return;
+        }
+        const centerPos = this.getCenterPos();
+        const nearRegion = this.map.getNearestRegionFromWorldPos(
+            centerPos.x,
+            centerPos.y,
+        );
+        if (!this.nextRegion) {
+            const regions = this.map.findPath(nearRegion.pid, this.targetRegion.pid);
+            if (regions && regions.length > 0) {
+                this.nextRegion = regions[regions.length - 1];
+            }
+        } else {
+            const d = distance(
+                nearRegion.position.x,
+                nearRegion.position.y,
+                centerPos.x,
+                centerPos.y,
+            );
+
+            if (d < 3) {
+                const regions = this.map.findPath(nearRegion.pid, this.targetRegion.pid);
+                if (regions && regions.length > 0) {
+                    this.nextRegion = regions[regions.length - 1];
+                }
+            }
+        }
+
+        if (this.nextRegion) {
+            this.vol.x = this.nextRegion.position.x - centerPos.x;
+            this.vol.y = this.nextRegion.position.y - centerPos.y;
+            this.vol.setLength(this.speed);
+        }
+
+        this.x += this.vol.x;
+        this.y += this.vol.y;
     }
 }
 
@@ -171,6 +252,7 @@ class Voronoi {
 
         // generate seed points
         const jitter = 0.5;
+        // const jitter = 0;
         for (let r = 0; r < this.options.row; r++) {
             for (let c = 0; c < this.options.col; c++) {
                 this.points.push({
@@ -200,10 +282,15 @@ class Voronoi {
         for (let eid = 0; eid < this.numOfHalfEdges; eid++) {
             const startPid = this.delaunay.triangles[eid];
             const endPid = this.delaunay.triangles[this.delaunay.halfedges[eid]];
-            if (this.connections.has(startPid)) {
-                this.connections.get(startPid).push(endPid);
-            } else {
-                this.connections.set(startPid, [endPid]);
+            if (!endPid) {
+                console.log('startPid ', startPid, 'does not have end pid');
+            }
+            if (endPid) {
+                if (this.connections.has(startPid)) {
+                    this.connections.get(startPid).push(endPid);
+                } else {
+                    this.connections.set(startPid, [endPid]);
+                }
             }
         }
 
@@ -221,9 +308,13 @@ class Voronoi {
             const d = Math.abs(nx) + Math.abs(ny);
             e = (1 + e - d) / 2;
             this.elevation[idx] = e;
-            // this.moisture[idx] =
-            //     (1 + noise.noise2D(nx / waveLength, ny / waveLength)) / 2;
+            this.moisture[idx] =
+                (1 + noise.noise2D(nx / waveLength, ny / waveLength)) / 2;
         });
+    }
+
+    public isRegionAvailable(pid: number): boolean {
+        return this.elevation[pid] >= 0.5;
     }
 
     private getEdgeIdsAroundPoint(startEid: number): number[] {
@@ -259,10 +350,22 @@ class Voronoi {
     // calculate color based on elevation & moisture for each point(region, cell)
     private getBiomeColor(pid: number): string {
         const e = this.elevation[pid];
-        const step = Math.floor(e / 0.1);
-        const r = 50 + 20 * step;
-
-        return `rgb(${r}, ${r}, ${r})`;
+        // const step = Math.floor(e / 0.1);
+        if (e > 0.5) {
+            return 'rgb(200, 200, 200)';
+        } else {
+            // const r = 50 + 20 * step;
+            if (e > 0.45) {
+                return '#1b338d';
+            } else if (e > 0.35) {
+                return '#f796b9';
+            } else if (e > 0.25) {
+                return '#7bcfed';
+            } else {
+                return '#813ea2';
+            }
+            // return `rgb(${r},  ${r}, ${r})`;
+        }
 
         // let e = (this.elevation[pid] - 0.5) * 2,
         //     m = this.moisture[pid];
@@ -412,7 +515,14 @@ class Voronoi {
         ctx.restore();
     }
 
-    public getRegionFromWorldPos(worldX: number, worldY: number): void {
+    public transferMapPosToWorldPos(pos: Position): Position {
+        return {
+            x: pos.x * this.xScale,
+            y: pos.y * this.yScale,
+        };
+    }
+
+    public getNearestRegionFromWorldPos(worldX: number, worldY: number): Region {
         const x = worldX / this.xScale;
         const y = worldY / this.yScale;
 
@@ -426,14 +536,106 @@ class Voronoi {
             }
         });
 
-        if (selectPid) {
-            this.selectPids.clear();
-            this.selectPids.add(selectPid);
-            const connectPids = this.connections.get(selectPid);
-            if (connectPids) {
-                connectPids.forEach((p) => this.selectPids.add(p));
-            }
+        if (selectPid < 0) {
+            return null;
         }
+
+        return {
+            pid: selectPid,
+            position: this.transferMapPosToWorldPos(this.points[selectPid]),
+        };
+    }
+
+    public getNeighborRegions(worldX: number, worldY: number): Region[] {
+        const nearestRegion = this.getNearestRegionFromWorldPos(worldX, worldY);
+
+        if (!nearestRegion) {
+            return [];
+        }
+
+        const neighborPids = this.connections.get(nearestRegion.pid);
+
+        return neighborPids.map((p) => {
+            return {
+                pid: p,
+                position: this.transferMapPosToWorldPos(this.points[p]),
+            };
+        });
+    }
+
+    public distanceBetweenPids(aPid: number, bPid: number): number {
+        const a = this.points[aPid];
+        const b = this.points[bPid];
+
+        return distance(a.x, a.y, b.x, b.y);
+    }
+
+    public findPath(fromPid: number, toPid: number): Region[] {
+        if (fromPid === toPid) {
+            return [];
+        }
+
+        type Pid = number;
+        type Entry = {
+            pid: number;
+            cost: number;
+        };
+        const frontier = new PQ<Entry>((a, b): number => b.cost - a.cost);
+        const cameFrom = new Map<Pid, Pid>();
+        const costSoFar = new Map<Pid, number>();
+
+        frontier.enq({ pid: fromPid, cost: 0 });
+        costSoFar.set(fromPid, 0);
+
+        let found = false;
+        while (frontier.size() > 0) {
+            const cur = frontier.deq();
+            if (cur.pid === toPid) {
+                found = true;
+                break;
+            }
+
+            const neighborPids = this.connections.get(cur.pid);
+            neighborPids
+                .filter((pid) => this.elevation[pid] > 0.5)
+                .forEach((neighborPid) => {
+                    const newCost =
+                        costSoFar.get(cur.pid) +
+                        this.distanceBetweenPids(cur.pid, neighborPid);
+                    if (
+                        !costSoFar.has(neighborPid) ||
+                        newCost < costSoFar.get(neighborPid)
+                    ) {
+                        costSoFar.set(neighborPid, newCost);
+                        const priority =
+                            newCost + this.distanceBetweenPids(neighborPid, toPid);
+                        frontier.enq({
+                            pid: neighborPid,
+                            cost: priority,
+                        });
+                        cameFrom.set(neighborPid, cur.pid);
+                    }
+                });
+        }
+
+        if (!found) {
+            return [];
+        }
+
+        const pids = [];
+        let pid = toPid;
+        while (cameFrom.get(pid) !== fromPid) {
+            const nextPid = cameFrom.get(pid);
+            pids.push(nextPid);
+            pid = nextPid;
+        }
+
+        return pids.map((pid) => {
+            return {
+                pid,
+                position: this.transferMapPosToWorldPos(this.points[pid]),
+            };
+        });
     }
 }
 
@@ -449,19 +651,31 @@ function main(
         y: 0,
         width: 640,
         height: 640,
-        col: 32,
-        row: 32,
+        col: 56,
+        row: 56,
     });
 
     const player = new Player();
+    const enemy = new Enemy(voronoi);
+    enemy.x = width / 2;
+    enemy.y = height / 2;
     const userInput = new UserInput(doc);
 
+    let region: Region = null;
+    let regions: Region[] = null;
     doc.addEventListener('click', (e) => {
-        voronoi.getRegionFromWorldPos(e.clientX, e.clientY);
+        region = voronoi.getNearestRegionFromWorldPos(e.clientX, e.clientY);
+        enemy.setTarget({
+            x: e.clientX,
+            y: e.clientY,
+        });
+        const r = voronoi.getNearestRegionFromWorldPos(0, 0);
+        regions = voronoi.findPath(r.pid, region.pid);
     });
 
     function update(): void {
         player.update(userInput);
+        enemy.update();
         userInput.clear();
     }
 
@@ -469,6 +683,23 @@ function main(
         ctx.clearRect(0, 0, width, height);
         voronoi.render(ctx);
         player.render(ctx);
+        enemy.render(ctx);
+
+        if (region) {
+            ctx.beginPath();
+            ctx.fillStyle = 'red';
+            ctx.arc(region.position.x, region.position.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        if (regions) {
+            regions.forEach((r) => {
+                ctx.beginPath();
+                ctx.fillStyle = 'blue';
+                ctx.arc(r.position.x, r.position.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
     }
 
     function mainLoop(): void {
